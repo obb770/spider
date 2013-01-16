@@ -12,23 +12,17 @@
 <link rel="apple-touch-startup-image" href="touch-startup-image.png" />
 <link rel="shortcut icon" href="touch-icon.png" />
 <style type="text/css">
-html, body {
-    height: 100%;
-}
 body {
     background-color: forestgreen;
     color: white;
     margin: 0;
     overflow: hidden;
 }
-#board {
-    height: 100%;
-    width: 100%;
-}
 #log {
     font-family: monospace;
     font-size: large;
     margin-top: 20px;
+    padding: 1em;
 }
 #info {
     font-family: helvetica;
@@ -823,8 +817,7 @@ body {
             info,
             log,
             game,
-            ignoreResize = false,
-            mystatus = "";
+            ignoreResize = false;
 
         column_vspace = function (len, clen) {
             var vspace = MAX_VSPACE;
@@ -911,26 +904,12 @@ body {
             }
         };
 
-        drawStatus = function (myst) {
-            ctx.save();
-            ctx.font = "20px helvetica";
-            ctx.fillStyle = green;
-            (function () {
-                var xlen = ctx.measureText(myst).width,
-                    xoff = Math.floor((bwidth - xlen) / 2);
-                ctx.fillRect(xoff, 20, xlen, 20);
-                ctx.fillStyle = "white";
-                ctx.fillText(myst, xoff, 38);
-            }());
-            ctx.restore();
-        };
-
         update = function (force) {
             var cover = {x: 0},
                 i;
     
             for (i = 0; i < board.columns.length; i += 1) {
-                if (!FALSE || force || board.columns[i].isModified()) {
+                if (force || board.columns[i].isModified()) {
                     drawColumn(i, hoffset + i * hspace, voffset, cover);
                     if (!board.getCarry() || 
                             board.getSrc() !== board.columns[i]) {
@@ -938,18 +917,6 @@ body {
                     }
                 }
             }
-            if (mystatus) {
-                drawStatus(mystatus);
-                setTimeout(function () {mystatus = ""; update(true); }, 3000);
-            }
-            if (FALSE) {
-                ctx.save();
-                ctx.fillStyle = "red";
-                for (i = 1; 80 * i <= bheight; i += 1) {
-                    ctx.fillRect(0, 80 * i - 1, bwidth, 1);
-                }
-            }
-            ctx.restore();
         };
 
         columnAtX = function (x) {
@@ -995,17 +962,15 @@ body {
             return pos;
         };
 
-        resize = function () {
+        resize = function (delayUpdate) {
             if (ignoreResize) {
                 return;
             }
             var ncol;
-            canvas.width = canvas.offsetWidth;
-            bwidth = canvas.width;
-            canvas.height = canvas.offsetHeight;
-            bheight = canvas.height;
-            control.resize(canvas);
+            canvas.width = bwidth = window.innerWidth;
+            canvas.height = bheight = window.innerHeight;
             console.log("resize: " + String(bwidth) + "x" + String(bheight));
+            control.resize(canvas);
             ctx = canvas.getContext('2d');
             ctx.fillStyle = green;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1022,7 +987,19 @@ body {
                         CWIDTH) / 2);
             }
             voffset = 20;
-            update(true);
+            if (delayUpdate) {
+                game.style.display = "none";
+                info.style.display = "block";
+                info.innerHTML = "";
+                setTimeout(function () {
+                    update(true);
+                    info.style.display = "none"; 
+                    game.style.display = "block";
+                }, 100);
+            }
+            else {
+                update(true);
+            }
         };
 
         message = function (msg) {
@@ -1050,6 +1027,7 @@ body {
                 log.style.display = "none"; 
                 game.style.display = "block";
                 log.innerHTML = '';
+                resize(true);
             }
         };
 
@@ -1063,7 +1041,6 @@ body {
             j = cardAtY(i, y).j;
             column = board.columns[i];
             column.clickOnCard(column.cardAt(j));
-            mystatus = String(canvas.width) + "x" + String(canvas.height) + " " + String(x) + "," + String(y) + " " + String(column.length()) + ":" + String(i) + "," + String(j) + ":" + String(cardAtY(i, y).vspace);
             update(false);
             state.save();
             if (board.isGameOpen()) {
@@ -1163,7 +1140,7 @@ body {
                 document.getElementById('clubs'),
                 document.getElementById('diamonds')];
             state.load('0', false);
-            resize();
+            resize(true);
         };
 
         return {
@@ -1423,14 +1400,17 @@ body {
             if (lastTimer) {
                 clearTimeout(lastTimer);
             }
-            lastTimer = setTimeout(function () {view.resize(); }, 500);
+            lastTimer = setTimeout(function () {
+                lastTimer = null;
+                view.resize();
+            }, 500);
         }, false);
     }());
 
     (function () {
         window.addEventListener("orientationchange", function () {
             setTimeout(function () {
-                view.message("Orientation: " + String(window.orientation));
+                view.resize(true);
             }, 100);
         }, false);
     }());
