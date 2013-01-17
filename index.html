@@ -816,8 +816,7 @@ body {
             cursor,
             info,
             log,
-            game,
-            ignoreResize = false;
+            game;
 
         column_vspace = function (len, clen) {
             var vspace = MAX_VSPACE;
@@ -962,10 +961,7 @@ body {
             return pos;
         };
 
-        resize = function (delayUpdate) {
-            if (ignoreResize) {
-                return;
-            }
+        resize = function () {
             var ncol;
             canvas.width = bwidth = window.innerWidth;
             canvas.height = bheight = window.innerHeight;
@@ -987,29 +983,15 @@ body {
                         CWIDTH) / 2);
             }
             voffset = 20;
-            if (delayUpdate) {
-                game.style.display = "none";
-                info.style.display = "block";
-                info.innerHTML = "";
-                setTimeout(function () {
-                    update(true);
-                    info.style.display = "none"; 
-                    game.style.display = "block";
-                }, 100);
-            }
-            else {
-                update(true);
-            }
+            update(true);
         };
 
         message = function (msg) {
             console.log(msg);
-            ignoreResize = true;
             game.style.display = "none";
             info.style.display = "block";
             info.innerHTML = msg;
             setTimeout(function () {
-                ignoreResize = false;
                 info.style.display = "none"; 
                 game.style.display = "block";
             }, 3000);
@@ -1017,17 +999,14 @@ body {
 
         showLog = function (show) {
             if (show) {
-                ignoreResize = true;
                 game.style.display = "none";
                 log.style.display = "block";
                 log.innerHTML = console.buffer;
             }
             else {
-                ignoreResize = false;
                 log.style.display = "none"; 
                 game.style.display = "block";
                 log.innerHTML = '';
-                resize(true);
             }
         };
 
@@ -1140,7 +1119,7 @@ body {
                 document.getElementById('clubs'),
                 document.getElementById('diamonds')];
             state.load('0', false);
-            resize(true);
+            resize();
         };
 
         return {
@@ -1410,7 +1389,7 @@ body {
     (function () {
         window.addEventListener("orientationchange", function () {
             setTimeout(function () {
-                view.resize(true);
+                console.log("orientation: " + window.orientation);
             }, 100);
         }, false);
     }());
