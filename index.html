@@ -806,6 +806,7 @@ body {
             CHEIGHT = OCHEIGHT / scale,
             MAX_VSPACE = Math.floor(CHEIGHT / 3),
             hspace,
+            overlap,
             hoffset,
             voffset,
             cards,
@@ -908,7 +909,7 @@ body {
                 i;
     
             for (i = 0; i < board.columns.length; i += 1) {
-                if (force || board.columns[i].isModified()) {
+                if (force || overlap || board.columns[i].isModified()) {
                     drawColumn(i, hoffset + i * hspace, voffset, cover);
                     if (!board.getCarry() || 
                             board.getSrc() !== board.columns[i]) {
@@ -973,12 +974,14 @@ body {
             ncol = board.columns.length;
             hspace = Math.floor((bwidth - CWIDTH) / (ncol - 1));
             if (hspace > CWIDTH) {
+                overlap = false;
                 hoffset = Math.floor((bwidth - CWIDTH * ncol) / 
                         (ncol + 1));
                 hspace  = CWIDTH + hoffset;
                 hoffset = Math.floor((bwidth - ncol * hspace) / 2);
                 hoffset += Math.floor((hspace - CWIDTH) / 2);
             } else {
+                overlap = true;
                 hoffset = Math.floor((bwidth - (ncol - 1) * hspace - 
                         CWIDTH) / 2);
             }
@@ -986,15 +989,25 @@ body {
             update(true);
         };
 
-        message = function (msg) {
+        message = function (msg, isHide) {
+            var hide, timer = null;
+            hide = function () {
+                console.log('hide info');
+                if (timer) {
+                    clearTimeout(timer);
+                }
+                info.style.display = "none"; 
+                game.style.display = "block";
+            };
+            if (isHide) {
+                hide();
+                return;
+            }
             console.log(msg);
             game.style.display = "none";
             info.style.display = "block";
             info.innerHTML = msg;
-            setTimeout(function () {
-                info.style.display = "none"; 
-                game.style.display = "block";
-            }, 3000);
+            timer = setTimeout(hide, 3000);
         };
 
         showLog = function (show) {
@@ -1340,7 +1353,8 @@ body {
 
         load = function (canvas) {
             var nullListener = function (e) {e.preventDefault(); },
-                hideLog = function () {view.showLog(false); };
+                hideLog = function () {view.showLog(false); },
+                hideInfo = function () {view.message(null, true); };
             document.addEventListener("touchstart", nullListener, false);
             document.addEventListener("touchmove", nullListener, false);
             document.body.addEventListener("keypress", keypress, false);
@@ -1352,6 +1366,8 @@ body {
             canvas.addEventListener("touchcancel", touch, false);
             log.addEventListener("mouseup", hideLog, false);
             log.addEventListener("touchend", hideLog, false);
+            info.addEventListener("mouseup", hideInfo, false);
+            info.addEventListener("touchend", hideInfo, false);
         };
 
         resize = function (canvas) {
@@ -1388,9 +1404,7 @@ body {
 
     (function () {
         window.addEventListener("orientationchange", function () {
-            setTimeout(function () {
                 console.log("orientation: " + window.orientation);
-            }, 100);
         }, false);
     }());
 
