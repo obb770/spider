@@ -1,7 +1,6 @@
 <!DOCTYPE HTML>
 <!-- This HTML source code is placed in the public domain -->
 <html manifest="manifest">
-<html>
 <head>
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="viewport" content="user-scalable=no, initial-scale=1.0" />
@@ -780,15 +779,26 @@ body {
             moves = board.moves.toString();
             st = '?nsuits=' + nsuits + '&seed=' + seed + 
                 '&hide=' + hide + '&moves=' + moves;
-            window.localStorage.setItem("state", st);
+            try {
+                window.localStorage.setItem("state", st);
+            } catch (e) {
+                console.log("state save: " + e);
+            }
         };
 
         load = function (nsuits, newseed) {
-            var st = window.localStorage.getItem("state"),
-                params = st ? st.split(/[?=&]/) : [''],
-                conf = {nsuits: '4', seed: '0', moves: ''},
+            var st = null,
+                params,
+                conf,
                 i;
 
+            try {
+                st = window.localStorage.getItem("state");
+            } catch (e) {
+                console.log("state load: " + e);
+            }
+            params = st ? st.split(/[?=&]/) : [''];
+            conf = {nsuits: '4', seed: '0', moves: ''};
             for (i = 1; i + 1 < params.length; i += 2) {
                 console.log("conf." + params[i] + " = (" + 
                         params[i + 1].length + ") " + params[i + 1]);
@@ -1039,8 +1049,7 @@ body {
                 game.style.display = "none";
                 log.style.display = "block";
                 log.innerHTML = console.buffer;
-            }
-            else {
+            } else {
                 log.style.display = "none"; 
                 game.style.display = "block";
                 log.innerHTML = '';
@@ -1425,13 +1434,6 @@ body {
             }, 500);
         }, false);
     }());
-
-    (function () {
-        window.addEventListener("orientationchange", function () {
-                console.log("orientation: " + window.orientation);
-        }, false);
-    }());
-
 
 }());
 </script>
