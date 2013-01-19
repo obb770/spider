@@ -296,12 +296,17 @@ body {
             this.doJoin();
         };
         Move.prototype.toString = function () {
-            var s = "";
+            var s = "",
+                t;
             if (this.carry) {
                 return s;
             }
             s = this.srcI.toString();
-            s += this.splitI.toString(16);
+            t = this.splitI.toString(16);
+            if (t.length < 2) {
+                s += '0';
+            }
+            s += t;
             s += this.dstI >= 10 ? 'F' : this.dstI.toString();
             return s;
         };
@@ -316,7 +321,7 @@ body {
             this.board.doDeal();
         };
         DealMove.prototype.toString = function () {
-            return "FFF";
+            return "FFFF";
         };
 
         Column = function (board, top, bottom) {
@@ -622,14 +627,14 @@ body {
             }
             this.deck = new Deck(2, nsuits, parseInt(seed, 10));
             this.initialDeal();
-            for (i = 0; i + 2 < moves.length; i += 3) {
-                if (moves.substr(i, 3) === "FFF") {
+            for (i = 0; i + 3 < moves.length; i += 4) {
+                if (moves.substr(i, 4) === "FFFF") {
                     this.deal();
                 } else {
-                    column = this.columns[parseInt(moves.substr(i, 1), 16)];
-                    card = column.cardAt(parseInt(moves.substr(i + 1, 1), 16));
+                    column = this.columns[parseInt(moves[i], 16)];
+                    card = column.cardAt(parseInt(moves.substr(i + 1, 2), 16));
                     column.clickOnCard(card);
-                    d = moves.substr(i + 2, 1);
+                    d = moves[i + 3];
                     if (d !== 'F') {
                         this.columns[parseInt(d, 16)].clickOnCard(null);
                     }
