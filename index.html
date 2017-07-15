@@ -783,7 +783,8 @@ body {
             hide = board.hide ? '1' : '0';
             moves = board.moves.toString();
             st = '?nsuits=' + nsuits + '&seed=' + seed +
-                '&hide=' + hide + '&moves=' + moves;
+                '&hide=' + hide + '&moves=' + moves +
+                '&total=' + board.total + '&opened=' + board.opened;
             try {
                 window.localStorage.setItem("state", st);
             } catch (e) {
@@ -803,7 +804,9 @@ body {
                 console.log("state load: " + e);
             }
             params = st ? st.split(/[?=&]/) : [''];
-            conf = {nsuits: '4', seed: '0', moves: ''};
+            conf = {
+                nsuits: '4', seed: '0', moves: '', total: '0', opened: '0'
+            };
             for (i = 1; i + 1 < params.length; i += 2) {
                 console.log("conf." + params[i] + " = (" +
                         params[i + 1].length + ") " + params[i + 1]);
@@ -820,6 +823,8 @@ body {
             if (conf.hide === '0') {
                 board.hide = false;
             }
+            board.total = conf.total;
+            board.opened = conf.opened;
             try {
                 board.start(conf.nsuits, conf.seed, conf.moves);
             } catch (e) {
@@ -1237,6 +1242,13 @@ body {
                 if (starting) {
                     starting = false;
                     if (board.canStart()) {
+                        board.total =
+                            (parseInt(board.total, 10) + 1).toString();
+                        if (board.isGameOpen()) {
+                            board.opened =
+                                (parseInt(board.opened, 10) + 1).toString();
+                        }
+                        state.save();
                         state.load('0', true);
                     } else {
                         msg = 'cannot start';
@@ -1255,7 +1267,8 @@ body {
                 view.message("left: " + board.deckSize() +
                         "<br>series: " + board.countSeries() +
                         "<br>moves: " + board.countMoves() +
-                        "<br>hidden: " + board.countHidden());
+                        "<br>hidden: " + board.countHidden() +
+                        "<br>score: " + board.opened + "/" + board.total);
             } else if (c === 'l') {
                 console.log("log");
                 view.showLog(true);
