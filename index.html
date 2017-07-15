@@ -150,7 +150,7 @@ body {
                 if (c === null) {
                     return d;
                 }
-                if (c.suit.name !== d.suit.name || 
+                if (c.suit.name !== d.suit.name ||
                         c.face.value !== d.face.value - 1) {
                     return d;
                 }
@@ -175,7 +175,7 @@ body {
         Suit.prototype.toString = function () {
             return this.name;
         };
-        SUITS = [new Suit("S", "\u2663", 0), new Suit("H", "\u2665", 1), 
+        SUITS = [new Suit("S", "\u2663", 0), new Suit("H", "\u2665", 1),
                 new Suit("C", "\u2660", 2), new Suit("D", "\u2666", 3)];
 
         Face = function (name, value) {
@@ -185,10 +185,10 @@ body {
         Face.prototype.toString = function () {
             return this.name;
         };
-        FACES = [new Face("A", 1), new Face("2", 2), new Face("3", 3), 
-            new Face("4", 4), new Face("5", 5), new Face("6", 6), 
-            new Face("7", 7), new Face("8", 8), new Face("9", 9), 
-            new Face("T", 10), new Face("J", 11), new Face("Q", 12), 
+        FACES = [new Face("A", 1), new Face("2", 2), new Face("3", 3),
+            new Face("4", 4), new Face("5", 5), new Face("6", 6),
+            new Face("7", 7), new Face("8", 8), new Face("9", 9),
+            new Face("T", 10), new Face("J", 11), new Face("Q", 12),
             new Face("K", 13)];
 
         Deck = function (ndecks, nsuits, seed) {
@@ -643,7 +643,7 @@ body {
             return this;
         };
         Board.prototype.canStart = function () {
-            return this.deck === null || 
+            return this.deck === null ||
                 (this.deck.isEmpty() && this.current === null);
         };
         Board.prototype.doDeal = function () {
@@ -664,7 +664,7 @@ body {
             return this;
         };
         Board.prototype.canDeal = function () {
-            return this.deck !== null && !this.deck.isEmpty() && 
+            return this.deck !== null && !this.deck.isEmpty() &&
                 this.current === null;
         };
         Board.prototype.undo = function () {
@@ -782,7 +782,7 @@ body {
             seed = board.deck.seed.toString();
             hide = board.hide ? '1' : '0';
             moves = board.moves.toString();
-            st = '?nsuits=' + nsuits + '&seed=' + seed + 
+            st = '?nsuits=' + nsuits + '&seed=' + seed +
                 '&hide=' + hide + '&moves=' + moves;
             try {
                 window.localStorage.setItem("state", st);
@@ -805,7 +805,7 @@ body {
             params = st ? st.split(/[?=&]/) : [''];
             conf = {nsuits: '4', seed: '0', moves: ''};
             for (i = 1; i + 1 < params.length; i += 2) {
-                console.log("conf." + params[i] + " = (" + 
+                console.log("conf." + params[i] + " = (" +
                         params[i + 1].length + ") " + params[i + 1]);
                 conf[params[i]] = params[i + 1];
             }
@@ -836,7 +836,7 @@ body {
     }());
 
     view = (function () {
-        var column_vspace, drawCard, drawColumn, update, columnAtX, cardAtY, 
+        var column_vspace, drawCard, drawColumn, update, columnAtX, cardAtY,
             resize, message, showLog, clickAt, load, drawStatus,
             OCWIDTH = 72,
             OCHEIGHT = 96,
@@ -862,12 +862,12 @@ body {
             var vspace = MAX_VSPACE;
             if (clen) {
                 if (len + clen > 2) {
-                    vspace = (bheight - voffset - 
+                    vspace = (bheight - voffset -
                         2 * CHEIGHT - MAX_VSPACE) / (len + clen - 2);
                 }
             } else {
                 if (len > 1) {
-                    vspace = (bheight - CHEIGHT - voffset - 10) / 
+                    vspace = (bheight - CHEIGHT - voffset - 10) /
                         (len - 1);
                 }
             }
@@ -886,8 +886,8 @@ body {
                 return;
             }
             if (!board.hide || card.showing) {
-                ctx.drawImage(cards[card.suit.ord], 
-                        OCWIDTH * (card.face.value - 1), 0, 
+                ctx.drawImage(cards[card.suit.ord],
+                        OCWIDTH * (card.face.value - 1), 0,
                         scale * w, scale * h, x, y, w, h);
             }
             if (!card.showing) {
@@ -907,7 +907,7 @@ body {
             var column = board.columns[i],
                 len = column.length(),
                 carry = board.getCarry(),
-                clen = (carry && board.getSrc() === column) ? 
+                clen = (carry && board.getSrc() === column) ?
                     carry.length() : 0,
                 vspace = column_vspace(len, clen),
                 j = 0,
@@ -915,7 +915,7 @@ body {
                 ex,
                 ey;
             for (c = column.bottom; c; c = c.up, j += 1) {
-                drawCard(c, x, y + vspace * j, CWIDTH, 
+                drawCard(c, x, y + vspace * j, CWIDTH,
                         c !== column.top ? vspace : CHEIGHT);
             }
             ex = x + CWIDTH;
@@ -936,8 +936,8 @@ body {
             if (clen > 0) {
                 j = 0;
                 for (c = carry.bottom, j = 0; c; c = c.up, j += 1) {
-                    drawCard(c, x, 
-                            bheight - vspace * (clen - 1 - j) - CHEIGHT, 
+                    drawCard(c, x,
+                            bheight - vspace * (clen - 1 - j) - CHEIGHT,
                             CWIDTH, c !== carry.top ? vspace : CHEIGHT);
                 }
             }
@@ -946,11 +946,11 @@ body {
         update = function (force) {
             var cover = {x: 0},
                 i;
-    
+
             for (i = 0; i < board.columns.length; i += 1) {
                 if (force || overlap || board.columns[i].isModified()) {
                     drawColumn(i, hoffset + i * hspace, voffset, cover);
-                    if (!board.getCarry() || 
+                    if (!board.getCarry() ||
                             board.getSrc() !== board.columns[i]) {
                         board.columns[i].resetModified();
                     }
@@ -959,7 +959,7 @@ body {
         };
 
         columnAtX = function (x) {
-            var maxhd = hoffset + 
+            var maxhd = hoffset +
                     (board.columns.length - 1) * hspace + CWIDTH,
                 i = -1;
             if (x >= hoffset || x < maxhd) {
@@ -987,7 +987,7 @@ body {
             column = board.columns[i];
             len = column.length();
             carry = board.getCarry();
-            clen = (carry && board.getSrc() === column) ? 
+            clen = (carry && board.getSrc() === column) ?
                 carry.length() : 0;
             pos.vspace = column_vspace(len, clen);
             pos.j = -1;
@@ -1014,14 +1014,14 @@ body {
             hspace = Math.floor((bwidth - CWIDTH) / (ncol - 1));
             if (hspace > CWIDTH) {
                 overlap = false;
-                hoffset = Math.floor((bwidth - CWIDTH * ncol) / 
+                hoffset = Math.floor((bwidth - CWIDTH * ncol) /
                         (ncol + 1));
                 hspace  = CWIDTH + hoffset;
                 hoffset = Math.floor((bwidth - ncol * hspace) / 2);
                 hoffset += Math.floor((hspace - CWIDTH) / 2);
             } else {
                 overlap = true;
-                hoffset = Math.floor((bwidth - (ncol - 1) * hspace - 
+                hoffset = Math.floor((bwidth - (ncol - 1) * hspace -
                         CWIDTH) / 2);
             }
             voffset = 20;
@@ -1035,7 +1035,7 @@ body {
                 if (timer) {
                     clearTimeout(timer);
                 }
-                info.style.display = "none"; 
+                info.style.display = "none";
                 game.style.display = "block";
             };
             if (isHide) {
@@ -1055,7 +1055,7 @@ body {
                 log.style.display = "block";
                 log.innerHTML = console.buffer;
             } else {
-                log.style.display = "none"; 
+                log.style.display = "none";
                 game.style.display = "block";
                 log.innerHTML = '';
             }
@@ -1079,7 +1079,7 @@ body {
         };
 
         cursor = (function () {
-            var changePos, 
+            var changePos,
                 prev_pos = {i: -1, j: -1},
                 saved_col,
                 saved_image,
@@ -1110,7 +1110,7 @@ body {
                     return;
                 }
                 if (prev_pos.i !== -1 && prev_pos.i === saved_col) {
-                    ctx.putImageData(saved_image, 
+                    ctx.putImageData(saved_image,
                             hoffset + saved_col * hspace, 0);
                     saved_col = -1;
                 }
@@ -1122,7 +1122,7 @@ body {
                 }
                 if (i !== -1) {
                     cx = hoffset + i * hspace;
-                    cw = CWIDTH < hspace || i === board.columns.length - 1 ? 
+                    cw = CWIDTH < hspace || i === board.columns.length - 1 ?
                         CWIDTH : hspace;
                     saved_col = i;
                     saved_image = ctx.getImageData(cx, 0, cw, bheight);
@@ -1133,17 +1133,17 @@ body {
                         card = board.columns[i].cardAt(j);
                         if (card !== null && card.showing && card.isFlush()) {
                             cy = voffset + j * vspace;
-                            ch = j === board.columns[i].length() - 1 ? 
+                            ch = j === board.columns[i].length() - 1 ?
                                 CHEIGHT : vspace;
                             ctx.fillStyle = tblue;
                             ctx.fillRect(cx, cy, cw, ch);
-                            saved_x = i < 5 ?  
+                            saved_x = i < 5 ?
                                 bwidth - CWIDTH - 2 * margin : 0;
-                            saved_card = ctx.getImageData(saved_x, saved_y, 
+                            saved_card = ctx.getImageData(saved_x, saved_y,
                                     CWIDTH + 2 * margin, CHEIGHT + 2 * margin);
-                            ctx.fillRect(saved_x, saved_y, 
+                            ctx.fillRect(saved_x, saved_y,
                                     CWIDTH + 2 * margin, CHEIGHT + 2 * margin);
-                            drawCard(card, saved_x + margin, saved_y + margin, 
+                            drawCard(card, saved_x + margin, saved_y + margin,
                                     CWIDTH, CHEIGHT);
                         }
                     }
@@ -1226,7 +1226,7 @@ body {
                     if (nsuits > 4) {
                         nsuits = 1;
                     }
-                    view.message("Playing with " + String(nsuits) + " suit" + 
+                    view.message("Playing with " + String(nsuits) + " suit" +
                             (nsuits > 1 ? "s" : ""));
                     state.load(nsuits.toString(), false);
                 } else {
@@ -1252,8 +1252,8 @@ body {
                 force = true;
             } else if (c === 'i') {
                 console.log("info");
-                view.message("left: " + board.deckSize() + 
-                        "<br>series: " + board.countSeries() + 
+                view.message("left: " + board.deckSize() +
+                        "<br>series: " + board.countSeries() +
                         "<br>moves: " + board.countMoves() +
                         "<br>hidden: " + board.countHidden());
             } else if (c === 'l') {
@@ -1316,7 +1316,7 @@ body {
             this.addEventListener("mousemove", mouseMove, false);
             timeoutId = setTimeout(function () {
                 console.log("gesture timeout");
-                isGesture = false; 
+                isGesture = false;
                 mouseMove(event);
             }, 1500);
             return true;
@@ -1416,7 +1416,7 @@ body {
                 offsetLeft += obj.offsetLeft;
                 offsetTop += obj.offsetTop;
             }
-            console.log("resize: +" + 
+            console.log("resize: +" +
                     String(offsetLeft) + "," + String(offsetTop));
         };
 
