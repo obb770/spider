@@ -66,6 +66,7 @@ body {
     var green = "rgb(34, 139, 34)", // forestgreen
         tgreen = "rgba(34, 139, 34, 0.5)",
         tblue = "rgba(32, 32, 128, .8)",
+        tpurple = "rgba(128, 32, 128, .8)",
         tred = "rgba(128, 32, 32, .2)",
         tblack = "rgba(0, 0, 0, .2)",
         board,
@@ -1137,11 +1138,16 @@ body {
                     ctx.fillRect(cx, 0, cw, bheight);
                     if (j !== -1) {
                         card = board.columns[i].cardAt(j);
-                        if (card !== null && card.showing && card.isFlush()) {
+                        if (card !== null) {
+                            if (card.showing && card.isFlush()) {
+                                ctx.fillStyle = tblue;
+                            }
+                            else {
+                                ctx.fillStyle = tpurple;
+                            }
                             cy = voffset + j * vspace;
                             ch = j === board.columns[i].length() - 1 ?
                                 CHEIGHT : vspace;
-                            ctx.fillStyle = tblue;
                             ctx.fillRect(cx, cy, cw, ch);
                             saved_x = i < 5 ?
                                 bwidth - CWIDTH - 2 * margin : 0;
