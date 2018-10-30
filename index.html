@@ -591,6 +591,7 @@ body {
             this.moves = new Stack();
             this.current = null;
             this.hide = false;
+            this.open = false;
         };
         Board.isShort = [
             false, true, true, false, true, true, false, true, true, false];
@@ -620,6 +621,7 @@ body {
         };
         Board.prototype.start = function (nsuits, seed, moves) {
             var i, column, card, d;
+            this.open = false;
             this.moves.reset();
             this.current = null;
             nsuits = parseInt(nsuits, 10);
@@ -712,16 +714,38 @@ body {
         };
         Board.prototype.countSeries = function () {
             var count = 0,
+                bottom,
+                top,
                 i;
             for (i = 0; i < this.series.length; i += 1) {
                 if (this.series[i] !== null && this.series[i].top !== null) {
                     count += 1;
                 }
             }
+            for (i = 0; i < this.columns.length; i += 1) {
+                bottom = this.columns[i].bottom;
+                top = this.columns[i].top;
+                if (bottom === null || !bottom.showing || !bottom.isFlush()) {
+                    continue;
+                }
+                if (bottom.face.name === "K" && top.face.name === "A") {
+                    count += 1;
+                }
+            }
             return count;
         };
         Board.prototype.isGameOpen = function () {
-            return this.deckSize() === 0 && this.countSeries() === 8;
+            if (this.open) {
+                return true;
+            }
+            if (this.deckSize() > 0) {
+                return false;
+            }
+            if (this.countSeries() < 8) {
+                return false;
+            };
+            this.open = true;
+            return true;
         };
         Board.prototype.countMoves = function () {
             return this.moves.size();
@@ -1206,6 +1230,8 @@ body {
         pressChar = function (c) {
             var msg = '',
                 force = false,
+                score,
+                average,
                 nsuits;
 
             if (c === 'd') {
@@ -1271,11 +1297,24 @@ body {
                 force = true;
             } else if (c === 'i') {
                 console.log("info");
+                score = "";
+                if (parseInt(board.opened, 10) < parseInt(board.total, 10)) {
+                    average = Math.round(1000. * parseInt(board.opened, 10) /
+                                         parseInt(board.total, 10));
+                    if (average < 100) {
+                        score += "0";
+                        if (average < 10) {
+                            score += "0";
+                        }
+                    }
+                    score = " (." + score + average.toString() + ")";
+                }
+                score = board.opened + "/" + board.total + score;
                 view.message("left: " + board.deckSize() +
                         "<br>series: " + board.countSeries() +
                         "<br>moves: " + board.countMoves() +
                         "<br>hidden: " + board.countHidden() +
-                        "<br>score: " + board.opened + "/" + board.total);
+                        "<br>score: " + score);
             } else if (c === 'l') {
                 console.log("log");
                 view.showLog(true);
