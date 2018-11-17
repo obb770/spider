@@ -1036,7 +1036,17 @@ body {
             var ncol;
             canvas.width = bwidth = window.innerWidth;
             canvas.height = bheight = window.innerHeight;
-            console.log("resize: " + String(bwidth) + "x" + String(bheight));
+            scale = 1;
+            CWIDTH = OCWIDTH;
+            CHEIGHT = OCHEIGHT;
+            if (bwidth > 12 * OCWIDTH) {
+                scale = 12 * OCWIDTH / bwidth;
+                CWIDTH = Math.round(OCWIDTH / scale);
+                scale = OCWIDTH / CWIDTH;
+                CHEIGHT = OCHEIGHT / scale;
+            }
+            console.log('resize: ' + String(bwidth) + 'x' + String(bheight));
+            console.log('  scale: ' + String(scale));
             control.resize(canvas);
             ctx = canvas.getContext('2d');
             ctx.fillStyle = green;
@@ -1055,7 +1065,7 @@ body {
                 hoffset = Math.floor((bwidth - (ncol - 1) * hspace -
                         CWIDTH) / 2);
             }
-            voffset = 0;
+            voffset = hoffset;
             update(true);
         };
 
@@ -1128,7 +1138,9 @@ body {
                     cy,
                     card,
                     cw,
-                    ch;
+                    ch,
+                    cpadding = CWIDTH / 5,
+                    s;
                 if (x !== -1) {
                     i = columnAtX(x);
                     if (y !== -1) {
@@ -1145,8 +1157,16 @@ body {
                             hoffset + saved_col * hspace, 0);
                     saved_col = -1;
                 }
-                margin = PADDING;
-                saved_y = voffset;
+                s = (bwidth - hoffset - 4 * hspace - CWIDTH - 2 * cpadding) /
+                    CWIDTH;
+                if (s > (hoffset + 5 * hspace - 2 * cpadding) / CWIDTH) {
+                    s = (hoffset + 5 * hspace - 2 * cpadding) / CWIDTH;
+                }
+                if (s > 2) {
+                    s = 2;
+                }
+                margin = Math.round(cpadding / s);
+                saved_y = 0;
                 if (saved_card !== null) {
                     ctx.putImageData(saved_card, saved_x, saved_y);
                     saved_card = null;
@@ -1173,14 +1193,18 @@ body {
                             ch = j === board.columns[i].length() - 1 ?
                                 CHEIGHT : vspace;
                             ctx.fillRect(cx, cy, cw, ch);
-                            saved_x = i < 5 ?
-                                bwidth - CWIDTH - 2 * margin : 0;
+                            saved_x = Math.floor(i < 5 ?
+                                bwidth - (CWIDTH + 2 * margin) * s : 0);
                             saved_card = ctx.getImageData(saved_x, saved_y,
-                                    CWIDTH + 2 * margin, CHEIGHT + 2 * margin);
-                            ctx.fillRect(saved_x, saved_y,
-                                    CWIDTH + 2 * margin, CHEIGHT + 2 * margin);
-                            drawCard(card, saved_x + margin, saved_y + margin,
-                                    CWIDTH, CHEIGHT);
+                                    Math.ceil((CWIDTH + 2 * margin) * s),
+                                    Math.ceil((CHEIGHT + 2 * margin) * s));
+                            ctx.scale(s, s);
+                            ctx.fillRect(saved_x / s, saved_y / s,
+                                    CWIDTH + 2 * margin,
+                                    CHEIGHT + 2 * margin);
+                            drawCard(card, saved_x / s + margin,
+                                    saved_y / s + margin, CWIDTH, CHEIGHT);
+                            ctx.setTransform(1, 0, 0, 1, 0, 0);
                         }
                     }
                     ctx.restore();
@@ -1449,11 +1473,8 @@ body {
         };
 
         load = function (canvas) {
-            var nullListener = function (e) {e.preventDefault(); },
-                hideLog = function () {view.showLog(false); },
+            var hideLog = function () {view.showLog(false); },
                 hideInfo = function () {view.message(null, true); };
-            document.addEventListener("touchstart", nullListener, false);
-            document.addEventListener("touchmove", nullListener, false);
             document.body.addEventListener("keypress", keypress, false);
             canvas.addEventListener("mousedown", mouseDown, false);
             canvas.addEventListener("mouseup", mouseUp, false);
