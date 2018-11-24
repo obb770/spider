@@ -1102,16 +1102,21 @@ body {
             }
         };
 
-        clickAt = function (x, y) {
+        clickAt = function (x, y, noCursor) {
             var i = columnAtX(x),
                 j,
-                column;
+                column,
+                card;
             if (i < 0) {
                 return;
             }
             j = cardAtY(i, y).j;
             column = board.columns[i];
-            column.clickOnCard(column.cardAt(j));
+            card = column.cardAt(j);
+            if ((card === null || !card.showing) && !noCursor) {
+                return;
+            }
+            column.clickOnCard(card);
             update(false);
             state.save();
             if (board.isGameOpen()) {
@@ -1157,6 +1162,14 @@ body {
                             hoffset + saved_col * hspace, 0);
                     saved_col = -1;
                 }
+                saved_y = 0;
+                if (saved_card !== null) {
+                    ctx.putImageData(saved_card, saved_x, saved_y);
+                    saved_card = null;
+                }
+                if (board.getCurrentMove() !== null) {
+                    return;
+                }
                 s = (bwidth - hoffset - 4 * hspace - CWIDTH - 2 * cpadding) /
                     CWIDTH;
                 if (s > (hoffset + 5 * hspace - 2 * cpadding) / CWIDTH) {
@@ -1166,11 +1179,6 @@ body {
                     s = 2;
                 }
                 margin = Math.round(cpadding / s);
-                saved_y = 0;
-                if (saved_card !== null) {
-                    ctx.putImageData(saved_card, saved_x, saved_y);
-                    saved_card = null;
-                }
                 if (i !== -1) {
                     cx = hoffset + i * hspace;
                     cw = CWIDTH < hspace || i === board.columns.length - 1 ?
@@ -1366,6 +1374,7 @@ body {
             offsetTop,
             bx,
             by,
+            currentEvent = null,
             isGesture,
             timeoutId;
 
@@ -1386,6 +1395,9 @@ body {
             if (!isGesture) {
                 view.cursorAt(x, y);
             }
+            else {
+                currentEvent = event;
+            }
             return true;
         };
 
@@ -1395,12 +1407,13 @@ body {
             console.log("down: " + String(x) + "," + String(y));
             bx = x;
             by = y;
+            currentEvent = event;
             isGesture = true;
             this.addEventListener("mousemove", mouseMove, false);
             timeoutId = setTimeout(function () {
                 console.log("gesture timeout");
                 isGesture = false;
-                mouseMove(event);
+                mouseMove(currentEvent);
             }, 1500);
             return true;
         };
@@ -1414,6 +1427,7 @@ body {
             console.log("up: " + String(x) + "," + String(y));
             clearTimeout(timeoutId);
             this.removeEventListener("mousemove", mouseMove, false);
+            currentEvent = null;
             view.cursorAt(-1, -1);
             hor = 0;
             if (x - bx > view.width() / 2) {
@@ -1452,8 +1466,9 @@ body {
                 isClick = true;
             }
             if (isClick) {
-                console.log("click: " + String(x) + "," + String(y));
-                view.clickAt(x, y);
+                console.log("click: " + String(x) + "," + String(y) + " (" +
+                            String(isGesture) + ")");
+                view.clickAt(x, y, isGesture);
                 return true;
             }
             console.log("noclick: " + String(x) + "," + String(y));
@@ -1473,8 +1488,14 @@ body {
         };
 
         load = function (canvas) {
-            var hideLog = function () {view.showLog(false); },
-                hideInfo = function () {view.message(null, true); };
+            var hideLog = function (e) {
+                    e.preventDefault();
+                    view.showLog(false);
+                },
+                hideInfo = function (e) {
+                    e.preventDefault();
+                    view.message(null, true);
+                };
             document.body.addEventListener("keypress", keypress, false);
             canvas.addEventListener("mousedown", mouseDown, false);
             canvas.addEventListener("mouseup", mouseUp, false);
