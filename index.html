@@ -1102,7 +1102,7 @@ body {
             }
         };
 
-        clickAt = function (x, y, noCursor) {
+        clickAt = function (x, y, cursorShowing) {
             var i = columnAtX(x),
                 j,
                 column,
@@ -1113,8 +1113,10 @@ body {
             j = cardAtY(i, y).j;
             column = board.columns[i];
             card = column.cardAt(j);
-            if ((card === null || !card.showing) && !noCursor) {
-                return;
+            if (card === null || !card.showing || !card.isFlush()) {
+                if (cursorShowing) {
+                    return;
+                }
             }
             column.clickOnCard(card);
             update(false);
@@ -1466,9 +1468,9 @@ body {
                 isClick = true;
             }
             if (isClick) {
-                console.log("click: " + String(x) + "," + String(y) + " (" +
-                            String(isGesture) + ")");
-                view.clickAt(x, y, isGesture);
+                console.log("click: " + String(x) + "," + String(y) + (
+                    !isGesture ? " (cursor)" : ""))
+                view.clickAt(x, y, !isGesture);
                 return true;
             }
             console.log("noclick: " + String(x) + "," + String(y));
