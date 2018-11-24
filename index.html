@@ -713,13 +713,14 @@ body {
             return count;
         };
         Board.prototype.countSeries = function () {
-            var count = 0,
+            var sCount = 0,
+                cCount = 0,
                 bottom,
                 top,
                 i;
             for (i = 0; i < this.series.length; i += 1) {
                 if (this.series[i] !== null && this.series[i].top !== null) {
-                    count += 1;
+                    sCount += 1;
                 }
             }
             for (i = 0; i < this.columns.length; i += 1) {
@@ -729,10 +730,10 @@ body {
                     continue;
                 }
                 if (bottom.face.name === "K" && top.face.name === "A") {
-                    count += 1;
+                    cCount += 1;
                 }
             }
-            return count;
+            return {series: sCount, columns: cCount, total: sCount + cCount};
         };
         Board.prototype.isGameOpen = function () {
             if (this.open) {
@@ -741,7 +742,7 @@ body {
             if (this.deckSize() > 0) {
                 return false;
             }
-            if (this.countSeries() < 8) {
+            if (this.countSeries().total < 8) {
                 return false;
             };
             this.open = true;
@@ -1106,7 +1107,8 @@ body {
             var i = columnAtX(x),
                 j,
                 column,
-                card;
+                card,
+                count;
             if (i < 0) {
                 return;
             }
@@ -1122,7 +1124,9 @@ body {
             update(false);
             state.save();
             if (board.isGameOpen()) {
-                message("Game Open!");
+                count = board.countSeries();
+                message("Game Open!" + (
+                    count.columns === count.total ? " (perfect)" : ""));
             }
         };
 
@@ -1264,6 +1268,7 @@ body {
         pressChar = function (c) {
             var msg = '',
                 force = false,
+                count,
                 score,
                 average,
                 nsuits;
@@ -1344,8 +1349,10 @@ body {
                     score = " (." + score + average.toString() + ")";
                 }
                 score = board.opened + "/" + board.total + score;
+                count = board.countSeries();
                 view.message("left: " + board.deckSize() +
-                        "<br>series: " + board.countSeries() +
+                        "<br>series: " + count.total + " (" + count.columns +
+                            " " + count.series + ")" +
                         "<br>moves: " + board.countMoves() +
                         "<br>hidden: " + board.countHidden() +
                         "<br>score: " + score);
