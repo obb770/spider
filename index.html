@@ -1126,7 +1126,8 @@ body {
             if (board.isGameOpen()) {
                 count = board.countSeries();
                 message("Game Open!" + (
-                    count.columns === count.total ? " (perfect)" : ""));
+                    count.columns === count.total ? " (perfect)" : "") +
+                    "<br/>Deal then redo to finish");
             }
         };
 
@@ -1283,7 +1284,9 @@ body {
                     msg = 'starting';
                     setTimeout(function () {
                         view.message(
-                            "Please redo to restart, or undo to cancel"
+                            "Please redo to " + 
+                            (board.isGameOpen() ? "finish" : "quit") +
+                            ", or undo to cancel"
                         );
                     }, 0);
                 } else {
