@@ -1381,12 +1381,14 @@ body {
     }());
 
     control = (function () {
-        var keypress, mouseMove, mouseDown, mouseUp, touch, load, resize,
+        var keypress, mouseMove, mouseDown, reset, mouseUp, mouseOut,
+            touch, load, resize,
             offsetLeft,
             offsetTop,
             bx,
             by,
             currentEvent = null,
+            isDown = false,
             isGesture,
             timeoutId;
 
@@ -1420,6 +1422,7 @@ body {
             bx = x;
             by = y;
             currentEvent = event;
+            isDown = true;
             isGesture = true;
             this.addEventListener("mousemove", mouseMove, false);
             timeoutId = setTimeout(function () {
@@ -1430,17 +1433,26 @@ body {
             return true;
         };
 
+        reset = function () {
+            clearTimeout(timeoutId);
+            this.removeEventListener("mousemove", mouseMove, false);
+            currentEvent = null;
+            view.cursorAt(-1, -1);
+        };
+
         mouseUp = function (event) {
             var x = event.clientX - offsetLeft, y = event.clientY - offsetTop,
                 hor,
                 ver,
                 isClick;
 
-            console.log("up: " + String(x) + "," + String(y));
-            clearTimeout(timeoutId);
-            this.removeEventListener("mousemove", mouseMove, false);
-            currentEvent = null;
-            view.cursorAt(-1, -1);
+            console.log("up: " + String(x) + "," + String(y) +
+                (isDown ? "" : " ignored"));
+            reset.call(this);
+            if (!isDown) {
+                return true;
+            }
+            isDown = false;
             hor = 0;
             if (x - bx > view.width() / 2) {
                 hor = 1;
@@ -1486,6 +1498,12 @@ body {
             console.log("noclick: " + String(x) + "," + String(y));
         };
 
+        mouseOut = function (event) {
+            console.log("out");
+            reset.call(this);
+            isDown = false;
+        };
+
         touch = function (event) {
             event.preventDefault();
             if (event.type === "touchstart") {
@@ -1496,6 +1514,9 @@ body {
             }
             if (event.type === "touchend") {
                 return mouseUp.call(this, event.changedTouches[0]);
+            }
+            if (event.type === "touchcancel") {
+                return mouseOut.call(this, event.changedTouches[0]);
             }
         };
 
@@ -1511,6 +1532,7 @@ body {
             document.body.addEventListener("keypress", keypress, false);
             canvas.addEventListener("mousedown", mouseDown, false);
             canvas.addEventListener("mouseup", mouseUp, false);
+            canvas.addEventListener("mouseout", mouseOut, false);
             canvas.addEventListener("touchstart", touch, false);
             canvas.addEventListener("touchmove", touch, false);
             canvas.addEventListener("touchend", touch, false);
